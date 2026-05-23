@@ -27,6 +27,12 @@ function Header() {
         state.isAuthenticated
     );
 
+  const loading =
+    useAuth(
+      (state) =>
+        state.loading
+    );
+
   const logout =
     useAuth(
       (state) =>
@@ -40,6 +46,12 @@ function Header() {
 
       navigate("/");
     };
+
+  // PREVENT HEADER FLICKER
+  if (loading) {
+
+    return null;
+  }
 
   return (
     <nav className={navbarClass}>
