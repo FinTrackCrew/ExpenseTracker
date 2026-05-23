@@ -163,7 +163,7 @@ const ExpensePredictionCard =
           </p>
 
           <h1 className="text-3xl font-bold text-slate-600 leading-tight">
-            Rs.
+            ₹
             {estimatedTotal.toLocaleString(
               "en-IN"
             )}
