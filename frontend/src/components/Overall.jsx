@@ -222,7 +222,7 @@ function Overall() {
   }
 
   return (
-    <div className={pageBackground}>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-cyan-50 to-sky-100 overflow-hidden">
 
       <div className={pageWrapper}>
 
