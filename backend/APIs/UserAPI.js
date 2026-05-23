@@ -513,3 +513,160 @@ userApp.get(
     });
   }
 );
+
+userApp.put(
+  "/updateUser",
+
+  verifyToken,
+
+  async (
+    req,
+    res
+  ) => {
+
+    try {
+
+      const {
+
+        Name,
+
+        Mob_num,
+
+        currentPassword,
+
+        newPassword,
+
+      } = req.body;
+
+      // FIND USER
+      const user =
+        await UserModel.findById(
+          req.user.id
+        ).select("+password");
+
+      if (!user) {
+
+        return res.status(404).json({
+
+          message:
+            "User not found",
+        });
+      }
+
+      // NAME VALIDATION
+      if (
+        !Name?.trim()
+      ) {
+
+        return res.status(400).json({
+
+          message:
+            "Name is required",
+        });
+      }
+
+      // MOBILE VALIDATION
+      if (
+        !/^[0-9]{10}$/.test(
+          Mob_num?.trim()
+        )
+      ) {
+
+        return res.status(400).json({
+
+          message:
+            "Mobile number must be exactly 10 digits",
+        });
+      }
+
+      // UPDATE BASIC DETAILS
+      user.Name =
+        Name.trim();
+
+      user.Mob_num =
+        Mob_num.trim();
+
+      // PASSWORD CHANGE
+      if (
+        newPassword &&
+        newPassword.trim()
+          .length > 0
+      ) {
+
+        if (
+          !currentPassword ||
+          currentPassword.trim()
+            .length === 0
+        ) {
+
+          return res.status(400).json({
+
+            message:
+              "Current password is required",
+          });
+        }
+
+        const isMatched =
+          await compare(
+
+            currentPassword,
+
+            user.password
+          );
+
+        if (!isMatched) {
+
+          return res.status(400).json({
+
+            message:
+              "Current password is incorrect",
+          });
+        }
+
+        if (
+          newPassword.length < 8
+        ) {
+
+          return res.status(400).json({
+
+            message:
+              "Password should be at least 8 characters",
+          });
+        }
+
+        const hashedPassword =
+          await hash(
+            newPassword,
+            12
+          );
+
+        user.password =
+          hashedPassword;
+      }
+
+      await user.save();
+
+      const userObj =
+        user.toObject();
+
+      delete userObj.password;
+
+      res.status(200).json({
+
+        message:
+          "Profile updated successfully",
+
+        payload:
+          userObj,
+      });
+
+    } catch (err) {
+
+      res.status(500).json({
+
+        message:
+          err.message,
+      });
+    }
+  }
+);
