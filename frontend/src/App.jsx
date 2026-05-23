@@ -24,64 +24,83 @@ import {
   useSessionStore,
 } from "./store/sessionStore";
 
+import {
+  useAuth,
+} from "./store/authStore";
+
 function App() {
 
   const {
     sessionExpired,
   } = useSessionStore();
 
-  // AUTO SESSION EXPIRY CHECK
-
-  const expiry =
-  localStorage.getItem(
-    "sessionExpiry"
-  );
-
-useEffect(() => {
-
-  const interval =
-    setInterval(() => {
-
-      const expiry =
-        localStorage.getItem(
-          "sessionExpiry"
-        );
-
-      if (!expiry) {
-        return;
-      }
-
-      const isExpired =
-        Date.now() >=
-        Number(expiry);
-
-      if (isExpired) {
-
-        localStorage.removeItem(
-          "sessionExpiry"
-        );
-
-        useSessionStore
-          .getState()
-          .setSessionExpired(
-            true
-          );
-
-        clearInterval(
-          interval
-        );
-      }
-
-    }, 1000);
-
-  return () =>
-    clearInterval(
-      interval
+  const checkAuth =
+    useAuth(
+      (state) =>
+        state.checkAuth
     );
 
-}, [expiry]);
+  // =====================================================
+  // CHECK AUTH ON APP LOAD
+  // =====================================================
 
+  useEffect(() => {
+
+    checkAuth();
+
+  }, []);
+
+  // =====================================================
+  // AUTO SESSION EXPIRY CHECK
+  // =====================================================
+
+  useEffect(() => {
+
+    const interval =
+      setInterval(() => {
+
+        const expiry =
+          localStorage.getItem(
+            "sessionExpiry"
+          );
+
+        if (!expiry) {
+          return;
+        }
+
+        const isExpired =
+          Date.now() >=
+          Number(expiry);
+
+        if (isExpired) {
+
+          localStorage.removeItem(
+            "sessionExpiry"
+          );
+
+          useSessionStore
+            .getState()
+            .setSessionExpired(
+              true
+            );
+
+          clearInterval(
+            interval
+          );
+        }
+
+      }, 1000);
+
+    return () =>
+      clearInterval(
+        interval
+      );
+
+  }, []);
+
+  // =====================================================
   // ROUTES
+  // =====================================================
 
   const routerObj =
     createBrowserRouter([
