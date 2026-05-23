@@ -47,12 +47,6 @@ function Header() {
       navigate("/");
     };
 
-  // PREVENT HEADER FLICKER
-  if (loading) {
-
-    return null;
-  }
-
   return (
     <nav className={navbarClass}>
 
@@ -68,7 +62,9 @@ function Header() {
 
         <ul className={navLinks}>
 
-          {!isAuthenticated ? (
+          {loading ? null :
+
+          (!isAuthenticated ? (
 
             <>
               <li>
@@ -201,7 +197,7 @@ function Header() {
                 </NavLink>
               </li>
             </>
-          )}
+          ))}
         </ul>
       </div>
     </nav>
