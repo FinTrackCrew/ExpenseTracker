@@ -108,7 +108,7 @@ function Login() {
 
         <p className="text-slate-500 text-center mt-2 mb-8">
           Sign in to continue
-          managing your finances ✨
+          managing your finances
         </p>
 
         {error && (

@@ -309,7 +309,7 @@ function Profile() {
         });
 
         setSuccessMessage(
-          "✅ Changes saved successfully"
+          "Changes saved successfully"
         );
 
         resetPasswordFields();
@@ -441,7 +441,7 @@ function Profile() {
                   />
 
                   <span className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400">
-                    🔒
+                    Cannot edit
                   </span>
                 </div>
               </div>

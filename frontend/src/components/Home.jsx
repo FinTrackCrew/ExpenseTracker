@@ -16,7 +16,7 @@ function Home() {
           <div>
             
             <div className="inline-flex items-center gap-2 bg-white/70 backdrop-blur-md border border-cyan-100 rounded-full px-4 py-2 text-sm font-medium text-cyan-700 mb-6 shadow-sm">
-              ✨ Smart AI-Powered Finance Tracking
+              Smart AI-Powered Finance Tracking
             </div>
 
             <h1 className="text-5xl md:text-6xl xl:text-7xl font-black leading-tight text-slate-900">

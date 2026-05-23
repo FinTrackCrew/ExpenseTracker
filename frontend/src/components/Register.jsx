@@ -67,7 +67,7 @@ function Register() {
       </h2>
 
       <p className="text-slate-500 text-center mt-2 mb-8">
-        Start managing your finances smarter ✨
+        Start managing your finances smarter 
       </p>
 
       {apiError && (

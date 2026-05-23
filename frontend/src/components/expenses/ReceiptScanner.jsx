@@ -322,7 +322,7 @@ const ReceiptScanner = ({
             <div className="flex items-center justify-between pb-5 border-b border-slate-200">
 
               <h2 className="text-2xl font-bold text-slate-800">
-                🧾 Detected Expense
+                 Detected Expense
               </h2>
 
               <button
@@ -557,7 +557,7 @@ const ReceiptScanner = ({
                 >
                   {saving
                     ? "Saving..."
-                    : "💾 Save Expense"}
+                    : "Save Expense"}
                 </button>
 
                 <button
