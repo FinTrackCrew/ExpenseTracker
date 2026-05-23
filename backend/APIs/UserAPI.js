@@ -112,7 +112,6 @@ userApp.post(
 
       } = req.body;
 
-      // NAME
       if (
         !Name?.trim()
       ) {
@@ -126,7 +125,6 @@ userApp.post(
           });
       }
 
-      // EMAIL
       if (
         !email?.trim()
       ) {
@@ -140,7 +138,6 @@ userApp.post(
           });
       }
 
-      // PASSWORD
       if (
         !password?.trim()
       ) {
@@ -168,7 +165,6 @@ userApp.post(
           });
       }
 
-      // MOBILE
       if (
         !Mob_num?.trim()
       ) {
@@ -197,7 +193,6 @@ userApp.post(
           });
       }
 
-      // EXISTING USER
       const existingUser =
         await UserModel.findOne({
 
@@ -220,14 +215,12 @@ userApp.post(
           });
       }
 
-      // HASH PASSWORD
       const hashedPassword =
         await hash(
           password,
           12
         );
 
-      // CREATE USER
       const newUserDoc =
         new UserModel({
 
@@ -248,13 +241,11 @@ userApp.post(
 
       await newUserDoc.save();
 
-      // TOKEN
       const signedToken =
         createToken(
           newUserDoc
         );
 
-      // COOKIE
       res.cookie(
         "token",
 
@@ -263,13 +254,11 @@ userApp.post(
         cookieOptions
       );
 
-      // REMOVE PASSWORD
       const userObj =
         newUserDoc.toObject();
 
       delete userObj.password;
 
-      // RESPONSE
       res.status(201).json({
 
         message:
@@ -315,7 +304,6 @@ userApp.post(
         password,
       } = req.body;
 
-      // VALIDATION
       if (
         !email?.trim() ||
 
@@ -331,7 +319,6 @@ userApp.post(
           });
       }
 
-      // FIND USER
       const user =
         await UserModel
           .findOne({
@@ -359,7 +346,6 @@ userApp.post(
           });
       }
 
-      // PASSWORD CHECK
       const isMatched =
         await compare(
 
@@ -381,13 +367,11 @@ userApp.post(
           });
       }
 
-      // TOKEN
       const signedToken =
         createToken(
           user
         );
 
-      // COOKIE
       res.cookie(
         "token",
 
@@ -396,13 +380,11 @@ userApp.post(
         cookieOptions
       );
 
-      // REMOVE PASSWORD
       const userObj =
         user.toObject();
 
       delete userObj.password;
 
-      // RESPONSE
       res.status(200).json({
 
         message:
@@ -489,30 +471,8 @@ userApp.get(
 );
 
 // =====================================================
-// LOGOUT
+// UPDATE USER
 // =====================================================
-
-userApp.get(
-  "/logout",
-
-  (
-    req,
-    res
-  ) => {
-
-    res.clearCookie(
-      "token",
-
-      cookieOptions
-    );
-
-    res.status(200).json({
-
-      message:
-        "Logout success",
-    });
-  }
-);
 
 userApp.put(
   "/updateUser",
@@ -538,7 +498,6 @@ userApp.put(
 
       } = req.body;
 
-      // FIND USER
       const user =
         await UserModel.findById(
           req.user.id
@@ -553,7 +512,6 @@ userApp.put(
         });
       }
 
-      // NAME VALIDATION
       if (
         !Name?.trim()
       ) {
@@ -565,7 +523,6 @@ userApp.put(
         });
       }
 
-      // MOBILE VALIDATION
       if (
         !/^[0-9]{10}$/.test(
           Mob_num?.trim()
@@ -579,14 +536,12 @@ userApp.put(
         });
       }
 
-      // UPDATE BASIC DETAILS
       user.Name =
         Name.trim();
 
       user.Mob_num =
         Mob_num.trim();
 
-      // PASSWORD CHANGE
       if (
         newPassword &&
         newPassword.trim()
@@ -668,5 +623,31 @@ userApp.put(
           err.message,
       });
     }
+  }
+);
+
+// =====================================================
+// LOGOUT
+// =====================================================
+
+userApp.get(
+  "/logout",
+
+  (
+    req,
+    res
+  ) => {
+
+    res.clearCookie(
+      "token",
+
+      cookieOptions
+    );
+
+    res.status(200).json({
+
+      message:
+        "Logout success",
+    });
   }
 );
