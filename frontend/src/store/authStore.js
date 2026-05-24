@@ -1,4 +1,5 @@
-import { create } from "zustand";
+import { create }
+from "zustand";
 
 import api from "../services/api";
 
@@ -298,7 +299,6 @@ export const useAuth =
             "selectedDate"
           );
 
-          // RESET TO CURRENT MONTH
           useMonthStore
             .getState()
             .setSelectedDate(
@@ -353,9 +353,61 @@ export const useAuth =
 
       try {
 
-        set({
-          loading: true,
-        });
+        // CHECK SESSION FIRST
+
+        const expiry =
+          localStorage.getItem(
+            "sessionExpiry"
+          );
+
+        // SESSION EXPIRED
+
+        if (
+          expiry &&
+          Date.now() >=
+            Number(expiry)
+        ) {
+
+          localStorage.removeItem(
+            "sessionExpiry"
+          );
+
+          set({
+
+            currentUser:
+              null,
+
+            isAuthenticated:
+              false,
+
+            loading:
+              false,
+
+            error: null,
+          });
+
+          return;
+        }
+
+     const currentPath =
+  window.location.pathname;
+
+const publicRoutes = [
+  "/",
+  "/login",
+  "/register",
+];
+
+if (
+  !publicRoutes.includes(
+    currentPath
+  )
+) {
+
+  set({
+    loading: true,
+  });
+}
 
         const res =
           await api.get(

@@ -54,49 +54,72 @@ function App() {
   // AUTO SESSION EXPIRY CHECK
   // =====================================================
 
-  useEffect(() => {
+ useEffect(() => {
 
-    const interval =
-      setInterval(() => {
+  const protectedRoutes = [
+    "/overall",
+    "/expenses",
+    "/savings",
+    "/profile",
+  ];
 
-        const expiry =
-          localStorage.getItem(
-            "sessionExpiry"
+  const currentPath =
+    window.location.pathname;
+
+  // DON'T RUN
+  // SESSION CHECK
+  // ON PUBLIC PAGES
+
+  if (
+    !protectedRoutes.includes(
+      currentPath
+    )
+  ) {
+
+    return;
+  }
+
+  const interval =
+    setInterval(() => {
+
+      const expiry =
+        localStorage.getItem(
+          "sessionExpiry"
+        );
+
+      if (!expiry) {
+        return;
+      }
+
+      const isExpired =
+        Date.now() >=
+        Number(expiry);
+
+      if (isExpired) {
+
+        localStorage.removeItem(
+          "sessionExpiry"
+        );
+
+        useSessionStore
+          .getState()
+          .setSessionExpired(
+            true
           );
 
-        if (!expiry) {
-          return;
-        }
+        clearInterval(
+          interval
+        );
+      }
 
-        const isExpired =
-          Date.now() >=
-          Number(expiry);
+    }, 1000);
 
-        if (isExpired) {
+  return () =>
+    clearInterval(
+      interval
+    );
 
-          localStorage.removeItem(
-            "sessionExpiry"
-          );
-
-          useSessionStore
-            .getState()
-            .setSessionExpired(
-              true
-            );
-
-          clearInterval(
-            interval
-          );
-        }
-
-      }, 1000);
-
-    return () =>
-      clearInterval(
-        interval
-      );
-
-  }, []);
+}, []);
 
   // =====================================================
   // ROUTES

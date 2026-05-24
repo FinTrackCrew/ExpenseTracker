@@ -36,13 +36,22 @@ api.interceptors.response.use(
     // IF NOT ALREADY
     // ON LOGIN PAGE
 
-    if (
-      error.response
-        ?.status === 401 &&
+  const publicRoutes = [
+  "/",
+  "/login",
+  "/register",
+];
 
-      currentPath !==
-        "/login"
-    ) {
+if (
+
+  error.response
+    ?.status === 401 &&
+
+  !publicRoutes.includes(
+    currentPath
+  )
+
+) {
 
       useSessionStore
         .getState()
