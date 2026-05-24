@@ -3,14 +3,17 @@ import { useEffect, useState } from "react";
 import api from "../services/api";
 
 import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
+  Bar,
+} from "react-chartjs-2";
+
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
   Tooltip,
-  ResponsiveContainer,
-  CartesianGrid,
-} from "recharts";
+  Legend,
+} from "chart.js";
 
 import SavingsGoalModal from "./SavingsGoalModal";
 
@@ -20,9 +23,6 @@ import {
   headingClass,
   bodyText,
   glassCard,
-  statCard,
-  statLabel,
-  statValue,
   primaryBtn,
   inputClass,
   alertDanger,
@@ -33,12 +33,15 @@ import {
   useMonthStore,
 } from "../store/monthStore";
 
-function Savings() {
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Tooltip,
+  Legend
+);
 
-  const [
-    chartData,
-    setChartData,
-  ] = useState([]);
+function Savings() {
 
   const {
     selectedDate,
@@ -77,100 +80,48 @@ function Savings() {
 
         setLoading(true);
 
-        const year =
-          new Date(
-            selectedDate
-          ).getFullYear();
-
-        const months =
-          getYearMonths(
-            year
-          );
-
-        const monthlyResponses =
-          await Promise.all(
-
-            months.map(
-              (month) =>
-
-                api.get(
-                  "/saving-api/get-savings",
-
-                  {
-                    params: {
-                      month:
-                        month.value,
-                    },
-                  }
-                )
-            )
-          );
-
-        const monthlyData =
-          monthlyResponses.map(
-
-            (
-              res,
-              index
-            ) => ({
-
-              month:
-                months[index]
-                  .label,
-
-              totalSavings:
-                res.data.payload
-                  ?.totalSavings ||
-
-                0,
-            })
-          );
-
-        setChartData(
-          monthlyData
-        );
-
         const selectedMonth =
           selectedDate.slice(
             0,
             7
           );
 
-        const selectedSavingsRes =
-          await api.get(
+        const [
+          selectedSavingsRes,
+          goalRes,
+          alertRes,
+        ] = await Promise.all([
+
+          api.get(
             "/saving-api/get-savings",
-
             {
               params: {
                 month:
                   selectedMonth,
               },
             }
-          );
+          ),
 
-        const goalRes =
-          await api.get(
+          api.get(
             "/saving-api/goal",
-
             {
               params: {
                 month:
                   selectedMonth,
               },
             }
-          );
+          ),
 
-        const alertRes =
-          await api.get(
+          api.get(
             "/alert-api/savingsAlert",
-
             {
               params: {
                 month:
                   selectedMonth,
               },
             }
-          );
+          ),
+        ]);
 
         setSelectedSavings(
           selectedSavingsRes
@@ -210,16 +161,15 @@ function Savings() {
         ?.totalIncome || 0
     );
 
-  const totalExpense =
-    Number(
-      selectedSavings
-        ?.totalExpense || 0
-    );
-
   const totalSavings =
     Number(
       selectedSavings
         ?.totalSavings || 0
+    );
+
+  const savingsGoal =
+    Number(
+      goal?.savingsGoal || 0
     );
 
   if (loading) {
@@ -287,16 +237,14 @@ function Savings() {
                 className={`${bodyText} mt-2`}
               >
                 Track your
-                monthly income,
-                expenses, and
-                savings insights
+                monthly income
+                and savings goals
               </p>
             </div>
 
             {/* RIGHT */}
             <div className="flex flex-col sm:flex-row items-start sm:items-end gap-4">
 
-              {/* DATE */}
               <div>
 
                 <label className="block text-xs font-medium text-slate-500 mb-1">
@@ -323,7 +271,6 @@ function Savings() {
                 />
               </div>
 
-              {/* BUTTON */}
               <button
                 type="button"
 
@@ -341,255 +288,334 @@ function Savings() {
           </div>
         </div>
 
-        {/* SUMMARY */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-8">
+        {/* CHART + INSIGHT */}
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
 
-          {/* INCOME */}
-          <div className="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm hover:-translate-y-1 hover:shadow-lg transition-all duration-300">
+          {/* CHART CARD */}
+          <div className={`${glassCard} flex flex-col`}>
 
-            <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-semibold text-slate-800 mb-5">
+              Savings Comparison
+            </h2>
 
-              <div>
+            <div className="flex-1 h-[380px]">
 
-                <p className="text-sm font-medium text-slate-500 mb-2">
-                  Income
+              <Bar
+                data={{
+
+                  labels: [
+                    "Income",
+                    "Savings",
+                    "Savings Goal",
+                  ],
+
+                  datasets: [
+                    {
+                      data: [
+                        totalIncome,
+                        totalSavings,
+                        savingsGoal,
+                      ],
+
+                      backgroundColor: [
+
+                        "rgba(6,182,212,0.75)",
+
+                        totalSavings >=
+                        savingsGoal
+
+                          ? "rgba(34,197,94,0.75)"
+
+                          : "rgba(234,179,8,0.75)",
+
+                        "rgba(99,102,241,0.75)",
+                      ],
+
+                      borderColor: [
+
+                        "#06b6d4",
+
+                        totalSavings >=
+                        savingsGoal
+
+                          ? "#22c55e"
+
+                          : "#eab308",
+
+                        "#6366f1",
+                      ],
+
+                      borderWidth: 2,
+
+                      borderRadius: 12,
+
+                      barThickness: 30,
+                    },
+                  ],
+                }}
+
+                options={{
+
+                  indexAxis: "y",
+
+                  responsive: true,
+
+                  maintainAspectRatio:
+                    false,
+
+                  plugins: {
+
+                    legend: {
+                      display: false,
+                    },
+
+                    tooltip: {
+
+                      backgroundColor:
+                        "#0f172a",
+
+                      padding: 12,
+
+                      callbacks: {
+
+                        label: function(
+                          context
+                        ) {
+
+                          return `₹${context.raw.toLocaleString()}`;
+                        },
+                      },
+                    },
+                  },
+
+                  scales: {
+
+                    x: {
+
+                      beginAtZero: true,
+
+                      grid: {
+
+                        color:
+                          "rgba(148,163,184,0.15)",
+                      },
+
+                      ticks: {
+
+                        color:
+                          "#475569",
+
+                        callback: function(
+                          value
+                        ) {
+
+                          return `₹${value}`;
+                        },
+                      },
+                    },
+
+                    y: {
+
+                      grid: {
+                        display: false,
+                      },
+
+                      ticks: {
+
+                        color:
+                          "#334155",
+
+                        font: {
+                          size: 13,
+                          weight: "600",
+                        },
+                      },
+                    },
+                  },
+                }}
+              />
+            </div>
+          </div>
+
+          {/* INSIGHT CARD */}
+          <div className={`${glassCard} flex flex-col`}>
+
+            <h2 className="text-xl font-semibold text-slate-800 mb-5">
+              Savings Goal Insight
+            </h2>
+
+            <div className="space-y-5">
+
+              {/* INCOME */}
+              <div className="bg-slate-50 rounded-2xl p-5 border border-slate-200">
+
+                <p className="text-sm text-slate-500 mb-2">
+                  Monthly Income
                 </p>
 
-                <h2 className="text-4xl font-bold text-cyan-600">
+                <h3 className="text-3xl font-bold text-cyan-600">
                   ₹
                   {totalIncome.toLocaleString()}
-                </h2>
+                </h3>
               </div>
-            </div>
 
-            <p className="text-xs text-slate-400">
-              Total monthly earnings
-            </p>
-          </div>
+              {/* CURRENT SAVINGS */}
+              <div className="bg-slate-50 rounded-2xl p-5 border border-slate-200">
 
-          {/* EXPENSES */}
-          <div className="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm hover:-translate-y-1 hover:shadow-lg transition-all duration-300">
-
-            <div className="flex items-center justify-between mb-4">
-
-              <div>
-
-                <p className="text-sm font-medium text-slate-500 mb-2">
-                  Expenses
+                <p className="text-sm text-slate-500 mb-2">
+                  Current Savings
                 </p>
 
-                <h2 className="text-4xl font-bold text-red-500">
-                  ₹
-                  {totalExpense.toLocaleString()}
-                </h2>
-              </div>
-            </div>
-
-            <p className="text-xs text-slate-400">
-              Current month spending
-            </p>
-          </div>
-
-          {/* SAVINGS */}
-          <div className="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm hover:-translate-y-1 hover:shadow-lg transition-all duration-300">
-
-            <div className="flex items-center justify-between mb-4">
-
-              <div>
-
-                <p className="text-sm font-medium text-slate-500 mb-2">
-                  Savings
-                </p>
-
-                <h2
-                  className={`text-4xl font-bold ${
-                    totalSavings >= 0
-                      ? "text-green-600"
-                      : "text-red-500"
-                  }`}
-                >
+                <h3 className="text-3xl font-bold text-green-600">
                   ₹
                   {totalSavings.toLocaleString()}
-                </h2>
+                </h3>
+              </div>
+
+              {/* SAVINGS GOAL */}
+              <div className="bg-slate-50 rounded-2xl p-5 border border-slate-200">
+
+                <p className="text-sm text-slate-500 mb-2">
+                  Savings Goal
+                </p>
+
+                <h3 className="text-3xl font-bold text-indigo-600">
+                  ₹
+                  {savingsGoal.toLocaleString()}
+                </h3>
               </div>
             </div>
-
-            <p className="text-xs text-slate-400">
-              Remaining monthly balance
-            </p>
           </div>
         </div>
 
-        {/* CHART */}
-        <div className={glassCard}>
+        {/* STATUS MESSAGE */}
+        <div>
 
-          <h2 className="text-xl font-semibold text-slate-800 mb-5">
-            Savings Trend
-          </h2>
+          {savingsGoal > 0 ? (
 
-          <div className="w-full h-80">
+            (() => {
 
-            <ResponsiveContainer
-              width="100%"
-              height="100%"
-            >
+              const today =
+                new Date();
 
-              <LineChart
-                data={chartData}
-              >
+              const selectedMonthDate =
+                new Date(
+                  selectedDate
+                );
 
-                <CartesianGrid strokeDasharray="3 3" />
+              const isMonthCompleted =
 
-                <XAxis dataKey="month" />
+                today.getFullYear() >
+                selectedMonthDate.getFullYear()
 
-                <YAxis />
+                ||
 
-                <Tooltip />
+                (
+                  today.getFullYear() ===
+                  selectedMonthDate.getFullYear()
 
-                <Line
-                  type="monotone"
-                  dataKey="totalSavings"
-                  stroke="#22c55e"
-                  strokeWidth={3}
-                  name="Savings"
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
+                  &&
 
-        {/* ALERT */}
-        {savingsAlert && (
+                  today.getMonth() >
+                  selectedMonthDate.getMonth()
+                );
 
-          Number(
-            savingsAlert.goal || 0
-          ) > 0 ? (
+              const isGoalReached =
+                totalSavings >=
+                savingsGoal;
 
-            <div
-              className={
-                savingsAlert.message?.includes(
-                  "violated"
-                )
+              if (
+                isMonthCompleted
+              ) {
 
-                  ? alertDanger
+                return isGoalReached ? (
 
-                  : alertSuccess
+                  <div className="bg-green-50 border border-green-200 rounded-2xl p-5">
+
+                    <p className="text-green-700 font-semibold text-lg">
+                      🎉 Goal Achieved!
+                    </p>
+
+                    <p className="text-green-600 text-sm mt-2">
+                      You successfully achieved your savings goal for this month.
+                    </p>
+                  </div>
+
+                ) : (
+
+                  <div className="bg-red-50 border border-red-200 rounded-2xl p-5">
+
+                    <p className="text-red-700 font-semibold text-lg">
+                      ⚠️ Goal Not Reached
+                    </p>
+
+                    <p className="text-red-600 text-sm mt-2">
+
+                      ₹
+                      {(
+                        savingsGoal -
+                        totalSavings
+                      ).toLocaleString()}
+
+                      {" "}
+                      short from your savings goal.
+                    </p>
+                  </div>
+                );
               }
-            >
 
-              <p className="font-semibold">
-                {
-                  savingsAlert.message
-                }
-              </p>
+              return isGoalReached ? (
 
-              <p className="text-sm mt-1">
+                <div className="bg-green-50 border border-green-200 rounded-2xl p-5">
 
-                Savings: Rs.
-                {" "}
+                  <p className="text-green-700 font-semibold text-lg">
+                    Savings Goal is Safe
+                  </p>
 
-                {
-                  savingsAlert.savings ||
-                  0
-                }
+                  <p className="text-green-600 text-sm mt-2">
+                    Your current savings are above your goal so far this month.
+                  </p>
+                </div>
 
-                {" | "}
+              ) : (
 
-                Goal: Rs.
-                {" "}
+                <div className="bg-amber-50 border border-amber-200 rounded-2xl p-5">
 
-                {
-                  savingsAlert.goal ||
-                  0
-                }
-              </p>
-            </div>
+                  <p className="text-amber-700 font-semibold text-lg">
+                    Keep Going 
+                  </p>
+
+                  <p className="text-amber-600 text-sm mt-2">
+
+                    ₹
+                    {(
+                      savingsGoal -
+                      totalSavings
+                    ).toLocaleString()}
+
+                    {" "}
+                    more needed to achieve your goal.
+                  </p>
+                </div>
+              );
+            })()
 
           ) : (
 
-            <div className="bg-slate-100 border border-slate-200 rounded-3xl p-5 shadow-sm">
+            <div className="bg-slate-100 border border-slate-200 rounded-2xl p-5">
 
-              <p className="text-slate-600 font-semibold">
-                No Savings Goal
+              <p className="text-slate-700 font-semibold text-lg">
+                No Goal Added
               </p>
 
-              <p className="text-slate-500 text-sm mt-1">
-                No savings goal added
-                for this month
+              <p className="text-slate-500 text-sm mt-2">
+                Add a savings goal to track your financial progress.
               </p>
             </div>
-          )
-        )}
+          )}
+        </div>
       </div>
     </div>
-  );
-}
-
-function SummaryCard({
-  title,
-  value,
-  color,
-}) {
-
-  return (
-    <div className={statCard}>
-
-      <p className={statLabel}>
-        {title}
-      </p>
-
-      <p
-        className={`${statValue} ${color}`}
-      >
-        Rs.
-        {Number(
-          value || 0
-        ).toLocaleString()}
-      </p>
-    </div>
-  );
-}
-
-function getYearMonths(
-  year
-) {
-
-  return Array.from(
-    { length: 12 },
-
-    (_, index) => {
-
-      const month =
-        String(
-          index + 1
-        ).padStart(
-          2,
-          "0"
-        );
-
-      const date =
-        new Date(
-          year,
-          index,
-          1
-        );
-
-      return {
-
-        value:
-          `${year}-${month}`,
-
-        label:
-          date.toLocaleString(
-            "default",
-
-            {
-              month:
-                "short",
-            }
-          ),
-      };
-    }
   );
 }
 
