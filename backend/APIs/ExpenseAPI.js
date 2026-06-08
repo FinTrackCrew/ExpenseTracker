@@ -134,57 +134,6 @@ if (!userIncome) {
         totalExpenses +
         newExpenseAmount;
 
-      // DEBUG LOGS
-      console.log(
-        "================================"
-      );
-
-      console.log(
-        "expenseMonth:",
-        expenseMonth
-      );
-
-      console.log(
-        "userIncome:",
-        userIncome
-      );
-
-      console.log(
-        "incomeValue:",
-        Number(
-          userIncome?.income ||
-            0
-        )
-      );
-
-      console.log(
-        "totalExpenses:",
-        totalExpenses
-      );
-
-      console.log(
-        "newExpenseAmount:",
-        newExpenseAmount
-      );
-
-      console.log(
-        "updatedTotalExpense:",
-        updatedTotalExpense
-      );
-
-      console.log(
-        "comparison:",
-        updatedTotalExpense >
-          Number(
-            userIncome?.income ||
-              0
-          )
-      );
-
-      console.log(
-        "================================"
-      );
-
       // BLOCK NEGATIVE SAVINGS
       if (
         updatedTotalExpense >
